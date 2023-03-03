@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.lazyPainterResource
 
 @Composable
 fun ColumnScope.ChatList(
@@ -37,11 +39,24 @@ fun ColumnScope.ChatList(
                         Spacer(modifier = Modifier.size(16.dp))
                         Text(message.message, modifier = Modifier.weight(1f).padding(top = 10.dp, end = 50.dp))
                     } else {
-                        Text(
-                            message.message,
-                            modifier = Modifier.weight(1f).padding(top = 10.dp, start = 50.dp),
-                            textAlign = TextAlign.End
-                        )
+                        if (!message.message.startsWith("http")) {
+                            Text(
+                                message.message,
+                                modifier = Modifier.weight(1f).padding(top = 10.dp, start = 50.dp),
+                                textAlign = TextAlign.End
+                            )
+                        } else {
+                            Row(
+                                modifier = Modifier.weight(1f).padding(top = 10.dp, start = 50.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                KamelImage(
+                                    resource = lazyPainterResource(data = message.message),
+                                    modifier = Modifier.size(150.dp, 150.dp),
+                                    contentDescription = "Image",
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.size(16.dp))
                         Box(
                             modifier = Modifier.size(50.dp)

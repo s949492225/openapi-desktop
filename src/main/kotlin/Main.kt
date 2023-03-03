@@ -7,10 +7,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.completion.CompletionRequest
 import com.aallam.openai.api.completion.TextCompletion
+import com.aallam.openai.api.image.ImageCreation
+import com.aallam.openai.api.image.ImageSize
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
+import io.kamel.core.config.KamelConfig
+import io.kamel.core.config.takeFrom
+import io.kamel.image.config.Default
+import io.kamel.image.config.LocalKamelConfig
+import io.kamel.image.config.resourcesFetcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +26,15 @@ import kotlinx.coroutines.launch
 
 data class Message(val from: String, val message: String)
 
+val desktopConfig = KamelConfig {
+    takeFrom(KamelConfig.Default)
+    // Available only on Desktop.
+    resourcesFetcher()
+}
+
+@OptIn(BetaOpenAI::class)
 fun main() = application {
+    var selectModel by remember { mutableStateOf("文本") }
     var input by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var chatList by remember { mutableStateOf(listOf<Message>()) }
@@ -27,7 +43,7 @@ fun main() = application {
 
     val openAI by lazy { OpenAI(API_KEY) }
 
-    fun requestGpt(prompt: String): Flow<TextCompletion> {
+    fun requestGptText(prompt: String): Flow<TextCompletion> {
         val completionRequest = CompletionRequest(
             model = ModelId("text-davinci-003"),
             prompt = prompt,
@@ -39,6 +55,18 @@ fun main() = application {
             echo = true
         )
         return openAI.completions(completionRequest)
+    }
+
+    fun requestGptImage(prompt: String) = flow<String> {
+        val url = openAI.imageURL( // or openAI.imageJSON
+            creation = ImageCreation(
+                prompt = prompt,
+                n = 1,
+                size = ImageSize.is1024x1024
+            )
+        )[0].url
+//        emit("https://img0.baidu.com/it/u=2900833435,993445529&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=500")
+        emit(url)
     }
 
     fun onSend() {
@@ -56,36 +84,58 @@ fun main() = application {
         coroutineScope.launch {
             listState.animateScrollToItem(chatList.size - 1)
         }
-        requestGpt(prompt)
-            .flowOn(Dispatchers.IO)
-            .onEach {
-                val msg = chatList.last()
-                val text = (msg.message + it.choices[0].text).replace("回复中,请等待", "")
-                chatList = chatList.modifyLast(text)
-                println(text)
-            }
-            .catch {
-                chatList = chatList.modifyLast("网络错误")
-                loading = false
-            }
-            .onCompletion {
-                loading = false
-            }
-            .launchIn(coroutineScope)
-    }
-
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "ChatGpt Desktop",
-        state = rememberWindowState(width = 800.dp, height = 600.dp)
-    ) {
-        MaterialTheme {
-            Column(Modifier.fillMaxSize(), Arrangement.spacedBy(5.dp)) {
-                ChatList(listState, chatList)
-                EditBox(input, loading, onChange = { input = it }) { onSend() }
-            }
+        if (selectModel == "文本") {
+            requestGptText(prompt)
+                .flowOn(Dispatchers.IO)
+                .onEach {
+                    val msg = chatList.last()
+                    val text = (msg.message + it.choices[0].text).replace("回复中,请等待", "")
+                    chatList = chatList.modifyLast(text)
+                    println(text)
+                }
+                .catch {
+                    chatList = chatList.modifyLast("网络错误")
+                    loading = false
+                }
+                .onCompletion {
+                    loading = false
+                }
+                .launchIn(coroutineScope)
+        } else {
+            requestGptImage(prompt)
+                .flowOn(Dispatchers.IO)
+                .onEach {
+                    chatList = chatList.modifyLast(it)
+                }
+                .catch {
+                    chatList = chatList.modifyLast("网络错误")
+                    loading = false
+                }
+                .onCompletion {
+                    loading = false
+                }
+                .launchIn(coroutineScope)
         }
     }
 
+    CompositionLocalProvider(LocalKamelConfig provides desktopConfig) {
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "ChatGpt Desktop",
+            state = rememberWindowState(width = 800.dp, height = 600.dp)
+        ) {
+            MaterialTheme {
+                Column(Modifier.fillMaxSize(), Arrangement.spacedBy(5.dp)) {
+                    ChatList(listState, chatList)
+                    EditBox(
+                        selectModel,
+                        input,
+                        loading,
+                        onModelChange = { selectModel = it },
+                        onTextChange = { input = it }) { onSend() }
+                }
+            }
+        }
+    }
 }
 
