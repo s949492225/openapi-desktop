@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation(platform("com.aallam.openai:openai-client-bom:2.1.3"))
+    implementation(platform("com.aallam.openai:openai-client-bom:3.0.0"))
     implementation("com.aallam.openai:openai-client")
     implementation("io.ktor:ktor-client-okhttp")
 }
