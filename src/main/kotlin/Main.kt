@@ -91,7 +91,9 @@ fun main() = application {
                 .flowOn(Dispatchers.IO)
                 .onEach {
                     val msg = chatList.last()
-                    val text = (msg.message + it.choices[0].text).replace("回复中,请等待", "")
+                    val text = (msg.message + it.choices[0].text)
+                        .replace("回复中,请等待", "")
+                        .replace(prompt + "\n\n", "")
                     chatList = chatList.modifyLast(text)
                     println(text)
                 }

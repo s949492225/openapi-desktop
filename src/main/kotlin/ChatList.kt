@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mikepenz.markdown.Markdown
 import io.kamel.image.KamelImage
 import io.kamel.image.lazyPainterResource
 
@@ -20,7 +21,8 @@ fun ColumnScope.ChatList(
 ) {
     Box(modifier = Modifier.weight(1.0f)) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 16.dp),
             state = listState,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -42,7 +44,7 @@ fun ColumnScope.ChatList(
                             Avatar(message)
                             Spacer(modifier = Modifier.size(16.dp))
                             if (!message.message.startsWith("http")) {
-                                Text(message.message, modifier = Modifier.padding(top = 10.dp))
+                                Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
                             } else {
                                 ChatImage(message)
                             }

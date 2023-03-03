@@ -16,7 +16,10 @@ fun EditBox(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit
 ) {
-    Row(modifier = Modifier.padding(16.dp).height(55.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp).wrapContentHeight(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         var expanded by remember { mutableStateOf(false) }
         val items = listOf("文本", "图片")
         DropdownMenu(
@@ -33,7 +36,7 @@ fun EditBox(
             }
         }
         Button(
-            modifier = Modifier.height(40.dp).width(80.dp).padding(end = 16.dp),
+            modifier = Modifier.height(45.dp).width(80.dp).padding(end = 16.dp),
             onClick = { expanded = true }
         )
         {
@@ -41,7 +44,7 @@ fun EditBox(
         }
         TextField(
             input,
-            modifier = Modifier.weight(1.0f).fillMaxHeight().padding(end = 16.dp),
+            modifier = Modifier.weight(1.0f).wrapContentHeight().padding(end = 16.dp),
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.Gray,
                 disabledTextColor = Color.Transparent,

@@ -17,6 +17,7 @@ dependencies {
     implementation("com.aallam.openai:openai-client")
     implementation("io.ktor:ktor-client-okhttp")
     implementation("com.alialbaali.kamel:kamel-image:0.4.0")
+    implementation("com.mikepenz:multiplatform-markdown-renderer-jvm:0.6.1")
 }
 
 compose.desktop {
