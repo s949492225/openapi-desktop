@@ -61,20 +61,12 @@ fun main() = application {
             .flowOn(Dispatchers.IO)
             .onEach {
                 val msg = chatList.last()
-                var text = (msg.message + it.choices[0].text)
-                text = text.replace("回复中,请等待", "")
-                chatList = mutableListOf<Message>().apply {
-                    this.addAll(chatList.subList(0, chatList.size - 1))
-                    this += Message(msg.from, text)
-                }
+                val text = (msg.message + it.choices[0].text).replace("回复中,请等待", "")
+                chatList = chatList.modifyLast(text)
                 println(text)
             }
             .catch {
-                val msg = chatList.last()
-                chatList = mutableListOf<Message>().apply {
-                    this.addAll(chatList.subList(0, chatList.size - 1))
-                    this += Message(msg.from, "网络错误")
-                }
+                chatList = chatList.modifyLast("网络错误")
                 loading = false
             }
             .onCompletion {
@@ -85,7 +77,7 @@ fun main() = application {
 
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Compose for Desktop",
+        title = "ChatGpt Desktop",
         state = rememberWindowState(width = 800.dp, height = 600.dp)
     ) {
         MaterialTheme {
