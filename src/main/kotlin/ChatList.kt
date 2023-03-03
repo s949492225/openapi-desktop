@@ -22,7 +22,7 @@ fun ColumnScope.ChatList(
     Box(modifier = Modifier.weight(1.0f)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
             state = listState,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -34,8 +34,10 @@ fun ColumnScope.ChatList(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (message.from == "我") {
-                        Row(modifier = Modifier.padding(start = 80.dp)) {
-                            Text(message.message, modifier = Modifier.padding(top = 10.dp))
+                        Row(modifier = Modifier.padding(start = 80.dp), horizontalArrangement = Arrangement.End) {
+                            Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
+                                Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
+                            }
                             Spacer(modifier = Modifier.size(16.dp))
                             Avatar(message)
                         }
