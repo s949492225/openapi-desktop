@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,6 +55,28 @@ fun ColumnScope.ChatList(
                                     resource = lazyPainterResource(data = message.message),
                                     modifier = Modifier.size(150.dp, 150.dp),
                                     contentDescription = "Image",
+                                    onLoading = {
+                                        Box(
+                                            modifier = Modifier.background(Color.LightGray).size(150.dp, 150.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(30.dp),
+                                                color = Color.White
+                                            )
+                                        }
+                                    },
+                                    onFailure = {
+                                        Box(
+                                            modifier = Modifier.background(Color.LightGray).size(150.dp, 150.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "加载失败",
+                                                color = Color.Red
+                                            )
+                                        }
+                                    }
                                 )
                             }
                         }

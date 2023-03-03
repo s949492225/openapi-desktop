@@ -20,6 +20,7 @@ import io.kamel.image.config.Default
 import io.kamel.image.config.LocalKamelConfig
 import io.kamel.image.config.resourcesFetcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -57,12 +58,12 @@ fun main() = application {
         return openAI.completions(completionRequest)
     }
 
-    fun requestGptImage(prompt: String) = flow<String> {
-        val url = openAI.imageURL( // or openAI.imageJSON
+    fun requestGptImage(prompt: String) = flow {
+        val url = openAI.imageURL(
             creation = ImageCreation(
                 prompt = prompt,
                 n = 1,
-                size = ImageSize.is1024x1024
+                size = ImageSize.is512x512
             )
         )[0].url
 //        emit("https://img0.baidu.com/it/u=2900833435,993445529&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=500")
@@ -82,6 +83,7 @@ fun main() = application {
         input = ""
         loading = true
         coroutineScope.launch {
+            delay(32)
             listState.animateScrollToItem(chatList.size - 1)
         }
         if (selectModel == "文本") {
@@ -95,10 +97,11 @@ fun main() = application {
                 }
                 .catch {
                     chatList = chatList.modifyLast("网络错误")
-                    loading = false
                 }
                 .onCompletion {
                     loading = false
+                    delay(32)
+                    listState.animateScrollToItem(chatList.size - 1)
                 }
                 .launchIn(coroutineScope)
         } else {
@@ -106,13 +109,15 @@ fun main() = application {
                 .flowOn(Dispatchers.IO)
                 .onEach {
                     chatList = chatList.modifyLast(it)
+                    println(it)
                 }
                 .catch {
                     chatList = chatList.modifyLast("网络错误")
-                    loading = false
                 }
                 .onCompletion {
                     loading = false
+                    delay(32)
+                    listState.animateScrollToItem(chatList.size - 1)
                 }
                 .launchIn(coroutineScope)
         }
