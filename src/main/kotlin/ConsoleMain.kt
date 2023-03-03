@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 
 @OptIn(BetaOpenAI::class)
 fun main() = runBlocking {
-    val openAI = OpenAI(OpenAIConfig("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", logLevel = LogLevel.None))
+    val openAI = OpenAI(OpenAIConfig(API_KEY, logLevel = LogLevel.None))
     var input = ""
     while (input != "exit") {
         print("请输入问题：")

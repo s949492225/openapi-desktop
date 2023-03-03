@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 
 data class Message(val from: String, val message: String)
 
-const val API_KEY = "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"
 fun main() = application {
     var input by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
