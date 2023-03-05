@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,9 @@ fun ColumnScope.ChatList(
                     if (message.from == "我") {
                         Row(modifier = Modifier.padding(start = 80.dp), horizontalArrangement = Arrangement.End) {
                             Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
-                                Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
+                                SelectionContainer {
+                                    Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
+                                }
                             }
                             Spacer(modifier = Modifier.size(16.dp))
                             Avatar(message)
@@ -46,7 +49,9 @@ fun ColumnScope.ChatList(
                             Avatar(message)
                             Spacer(modifier = Modifier.size(16.dp))
                             if (!message.message.startsWith("http")) {
-                                Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
+                                SelectionContainer {
+                                    Markdown(message.message, modifier = Modifier.padding(top = 10.dp))
+                                }
                             } else {
                                 ChatImage(message)
                             }
