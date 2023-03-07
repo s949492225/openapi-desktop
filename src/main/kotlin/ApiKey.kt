@@ -1,1 +1,1 @@
-const val API_KEY = "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"
+const val API_KEY = "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"

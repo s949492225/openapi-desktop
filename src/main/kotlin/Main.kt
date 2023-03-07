@@ -8,12 +8,15 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.aallam.openai.api.BetaOpenAI
-import com.aallam.openai.api.completion.CompletionRequest
-import com.aallam.openai.api.completion.TextCompletion
+import com.aallam.openai.api.chat.ChatCompletionRequest
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.image.ImageCreation
 import com.aallam.openai.api.image.ImageSize
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
+import com.aallam.openai.client.OpenAIConfig
 import io.kamel.core.config.KamelConfig
 import io.kamel.core.config.takeFrom
 import io.kamel.image.config.Default
@@ -23,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 
 data class Message(val from: String, val message: String)
@@ -42,32 +46,31 @@ fun main() = application {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    val openAI by lazy { OpenAI(API_KEY) }
+    val openAI by lazy { OpenAI(OpenAIConfig(token = API_KEY, timeout = Timeout(socket = 10.seconds))) }
 
-    fun requestGptText(prompt: String): Flow<TextCompletion> {
-        val completionRequest = CompletionRequest(
-            model = ModelId("text-davinci-003"),
-            prompt = prompt,
-            temperature = 0.0,
-            maxTokens = 1024,
-            topP = 1.0,
-            frequencyPenalty = 0.0,
-            presencePenalty = 0.0,
-            echo = true
+    fun requestGptText(prompt: String) =
+        openAI.chatCompletions(
+            ChatCompletionRequest(
+                model = ModelId("gpt-3.5-turbo"),
+                messages = listOf(
+                    ChatMessage(
+                        role = ChatRole.User,
+                        content = prompt
+                    )
+                )
+            )
         )
-        return openAI.completions(completionRequest)
-    }
 
     fun requestGptImage(prompt: String) = flow {
-        val url = openAI.imageURL(
-            creation = ImageCreation(
-                prompt = prompt,
-                n = 1,
-                size = ImageSize.is512x512
-            )
-        )[0].url
-//        emit("https://img0.baidu.com/it/u=2900833435,993445529&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=500")
-        emit(url)
+        emit(
+            openAI.imageURL(
+                creation = ImageCreation(
+                    prompt = prompt,
+                    n = 1,
+                    size = ImageSize.is512x512
+                )
+            )[0].url
+        )
     }
 
     fun onSend() {
@@ -91,9 +94,8 @@ fun main() = application {
                 .flowOn(Dispatchers.IO)
                 .onEach {
                     val msg = chatList.last()
-                    val text = (msg.message + it.choices[0].text)
+                    val text = (msg.message + (it.choices[0].delta?.content ?: ""))
                         .replace("回复中,请等待", "")
-                        .replace(prompt + "\n\n", "")
                     chatList = chatList.modifyLast(text)
                     println(text)
                 }

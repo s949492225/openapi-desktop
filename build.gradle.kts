@@ -27,7 +27,10 @@ compose.desktop {
             mainClass = "MainKt"
             nativeDistributions {
                 targetFormats(Dmg, Msi, Deb)
-                packageName = "ComposeTest"
+                macOS {
+                    iconFile.set(project.file("launcher/icon.icns"))
+                }
+                packageName = "ChatGpt"
                 packageVersion = "1.0.0"
             }
         }
